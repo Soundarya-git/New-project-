@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All-in-One App with Loader</title>
+  <style>
+    /* === LOADING PAGE === */
+    #loader {
+      position: fixed;
+      z-index: 9999;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(to right, #89f7fe, #66a6ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .loader-content h1 {
+      color: white;
+      font-size: 28px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* === GLOBAL === */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0c3fc, #8ec5fc);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background-color: #ffffffaa;
+      width: 100%;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    .tabs button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: #6200ea;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .tabs button.active {
+      background-color: #3700b3;
+    }
+
+    .section {
+      display: none;
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* === CALCULATOR === */
+    .calculator {
+      background-color: #ffffffdd;
+      border-radius: 15px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+      backdrop-filter: blur(6px);
+    }
+
+    .display {
+      height: 60px;
+      background-color: #1e1e1e;
+      color: #00ffcc;
+      font-size: 28px;
+      text-align: right;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .buttons button {
+      font-size: 20px;
+      padding: 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .buttons .equal {
+      background-color: #4caf50;
+      color: white;
+      grid-column: span 2;
+    }
+
+    .buttons .clear {
+      background-color: #f44336;
+      color: white;
+    }
+
+    /* === NOTES === */
+    .note-app {
+      background: #ffffffdd;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(5px);
+    }
+
+    textarea, input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      resize: none;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .note {
+      position: relative;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      color: #333;
+    }
+
+    .note button {
+      position: absolute;
+      top: 10px;
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+
+    /* === TIC TAC TOE === */
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      font-size: 18px;
+      margin: 10px 0 20px;
+      font-weight: bold;
+    }
+
+    .input-section {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input-section input {
+      padding: 8px 10px;
+      font-size: 16px;
+      width: 60px;
+      text-transform: uppercase;
+      text-align: center;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 8px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 36px;
+      text-align: center;
+      line-height: 100px;
+      background-color: #fff;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+    .message {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<!-- === LOADING SCREEN === -->
+<div id="loader">
+  <div class="loader-content">
+    <h1>🔄 Loading your App...</h1>
+  </div>
+</div>
+
+<!-- === TABS === -->
+<div class="tabs">
+  <button onclick="switchTab('calculator')" class="active">🧮 Calculator</button>
+  <button onclick="switchTab('notes')">📝 Notes</button>
+  <button onclick="switchTab('tictactoe')">🎮 Tic Tac Toe</button>
+</div>
+
+<!-- === CALCULATOR SECTION === -->
+<div id="calculator" class="section active">
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button onclick="clearDisplay()" class="clear">C</button>
+      <button onclick="appendToDisplay('/')">÷</button>
+      <button onclick="appendToDisplay('*')">×</button>
+      <button onclick="appendToDisplay('-')">−</button>
+      <button onclick="appendToDisplay('7')">7</button>
+      <button onclick="appendToDisplay('8')">8</button>
+      <button onclick="appendToDisplay('9')">9</button>
+      <button onclick="appendToDisplay('+')">+</button>
+      <button onclick="appendToDisplay('4')">4</button>
+      <button onclick="appendToDisplay('5')">5</button>
+      <button onclick="appendToDisplay('6')">6</button>
+      <button onclick="calculate()" class="equal">=</button>
+      <button onclick="appendToDisplay('1')">1</button>
+      <button onclick="appendToDisplay('2')">2</button>
+      <button onclick="appendToDisplay('3')">3</button>
+      <button onclick="appendToDisplay('0')" style="grid-column: span 2;">0</button>
+      <button onclick="appendToDisplay('.')">.</button>
+    </div>
+  </div>
+</div>
+
+<!-- === NOTES SECTION === -->
+<div id="notes" class="section">
+  <div class="note-app">
+    <input type="text" id="searchInput" placeholder="Search notes..." oninput="filterNotes()" />
+    <textarea id="noteInput" placeholder="Write your note here..."></textarea>
+    <div class="controls">
+      <input type="color" id="colorPicker" />
+      <button onclick="addNote()">Add Note</button>
+    </div>
+    <div id="notesList"></div>
+  </div>
+</div>
+
+<!-- === TIC TAC TOE SECTION === -->
+<div id="tictactoe" class="section">
+  <div class="scoreboard">
+    <div>Player X: <span id="scoreX">0</span></div>
+    <div>Player O: <span id="scoreO">0</span></div>
+  </div>
+  <div class="input-section">
+    <label for="startInput">Start as:</label>
+    <input type="text" id="startInput" maxlength="1" value="X" />
+    <button onclick="startGame()">Start Game</button>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="message" id="message"></div>
+</div>
+
+<!-- === SCRIPT === -->
+<script>
+  // LOADER
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      document.getElementById('loader').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('loader').style.display = 'none';
+      }, 500);
+    }, 2000);
+    startGame();
+    reloadNotes();
+  });
+
+  // Tabs
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Calculator
+  const display = document.getElementById('display');
+  function appendToDisplay(val) {
+    if (display.innerText === '0') display.innerText = val;
+    else display.innerText += val;
+  }
+  function clearDisplay() { display.innerText = '0'; }
+  function calculate() {
+    try { display.innerText = eval(display.innerText); }
+    catch { display.innerText = 'Error'; }
+  }
+
+  // Notes
+  const noteInput = document.getElementById('noteInput');
+  const colorPicker = document.getElementById('colorPicker');
+  const notesList = document.getElementById('notesList');
+  const searchInput = document.getElementById('searchInput');
+
+  function addNote() {
+    const text = noteInput.value.trim();
+    const color = colorPicker.value;
+    if (!text) return alert('Note is empty!');
+    const note = { id: Date.now(), text, color };
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notes.push(note);
+    localStorage.setItem('notes', JSON.stringify(notes));
+    displayNote(note);
+    noteInput.value = '';
+  }
+
+  function displayNote(note) {
+    const div = document.createElement('div');
+    div.className = 'note';
+    div.style.backgroundColor = note.color;
+    div.setAttribute('data-id', note.id);
+    div.innerHTML = `
+      <p>${note.text}</p>
+      <button onclick="editNote(${note.id})">Edit</button>
+      <button onclick="deleteNote(${note.id})">Delete</button>`;
+    notesList.appendChild(div);
+  }
+
+  function deleteNote(id) {
+    let notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notes = notes.filter(n => n.id !== id);
+    localStorage.setItem('notes', JSON.stringify(notes));
+    document.querySelector(`.note[data-id='${id}']`)?.remove();
+  }
+
+  function editNote(id) {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    const note = notes.find(n => n.id === id);
+    const newText = prompt("Edit note:", note.text);
+    if (newText) {
+      note.text = newText;
+      localStorage.setItem('notes', JSON.stringify(notes));
+      reloadNotes();
+    }
+  }
+
+  function reloadNotes() {
+    notesList.innerHTML = '';
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notes.forEach(displayNote);
+    filterNotes();
+  }
+
+  function filterNotes() {
+    const query = searchInput.value.toLowerCase();
+    document.querySelectorAll('.note').forEach(note => {
+      note.style.display = note.innerText.toLowerCase().includes(query) ? 'block' : 'none';
+    });
+  }
+
+  // Tic Tac Toe
+  let cells = [], currentPlayer = 'X', gameActive = true;
+  let scores = { X: 0, O: 0 };
+  const board = document.getElementById('board');
+  const message = document.getElementById('message');
+  const scoreX = document.getElementById('scoreX');
+  const scoreO = document.getElementById('scoreO');
+  const startInput = document.getElementById('startInput');
+
+  function startGame() {
+    currentPlayer = startInput.value.toUpperCase() === 'O' ? 'O' : 'X';
+    gameActive = true;
+    board.innerHTML = '';
+    cells = Array(9).fill('');
+    message.textContent = `Player ${currentPlayer}'s turn`;
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.index = i;
+      cell.addEventListener('click', handleClick);
+      board.appendChild(cell);
+    }
+  }
+
+  function handleClick(e) {
+    const index = e.target.dataset.index;
+    if (!gameActive || cells[index]) return;
+    cells[index] = currentPlayer;
+    e.target.textContent = currentPlayer;
+    if (checkWin(currentPlayer)) {
+      message.textContent = `🎉 Player ${currentPlayer} wins!`;
+      scores[currentPlayer]++;
+      updateScore();
+      gameActive = false;
+      setTimeout(startGame, 1500);
+      return;
+    }
+    if (cells.every(cell => cell)) {
+      message.textContent = "It's a draw!";
+      gameActive = false;
+      setTimeout(startGame, 1500);
+      return;
+    }
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    message.textContent = `Player ${currentPlayer}'s turn`;
+  }
+
+  function checkWin(player) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    return wins.some(pattern => pattern.every(i => cells[i] === player));
+  }
+
+  function updateScore() {
+    scoreX.textContent = scores['X'];
+    scoreO.textContent = scores['O'];
+  }
+</script>
+
+</body>
+</html>
